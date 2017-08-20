@@ -12,7 +12,13 @@ var bookRouter = express.Router();
 
 bookRouter.route('/Books')
 	.get(function(req, res){
-		Book.find(function(err, books) {
+
+		var query = {};
+		if(req.query.genre)
+		{
+			query.genre = req.query.genre;
+		}
+		Book.find(query, function(err, books) {
 			if(err)
 				res.status(500).send(err);
 			else
@@ -20,6 +26,17 @@ bookRouter.route('/Books')
 		});
 	});
 
+bookRouter.route('/Books/:bookId')	
+	.get(function(req, res){
+	Book.findById(req.params.bookId, function(err, book) {
+			if(err)
+				res.status(500).send(err);
+			else
+				res.json(book);
+		});
+	});
+
+//endshere
 app.use('/api', bookRouter);	
 
 app.get('/', function(req, res) {
