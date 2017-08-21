@@ -9,14 +9,32 @@ bookRouter.route('/')
 		
 	.get(bookController.get);
 
-bookRouter.route('/Books/:bookId')	
+bookRouter.use('/:bookId', function(req,res,next){
+        Book.findById(req.params.bookId, function(err,book){
+            if(err)
+                res.status(500).send(err);
+            else if(book)
+            {
+                req.book = book;
+                next();
+            }
+            else
+            {
+                res.status(404).send('no book found');
+            }
+        });
+    });
+
+//endshere
+bookRouter.route('/:bookId')	
 	.get(function(req, res){
-	Book.findById(req.params.bookId, function(err, book) {
-			if(err)
-				res.status(500).send(err);
-			else
-				res.json(book);
-		});
+
+		var returnBook = req.book.toJSON();
+
+		returnBook.links = {};
+		var newLink = 'http://' + req.headers.host + '/api/books/?genre=' + returnBook.genre;
+		returnBook.links.FilterByThisGenre = newLink.replace(' ', '%20');
+		res.json(returnBook);
 	})
 	.put(function(req,res) {
 		Book.findById(req.params.bookId, function(err, book) {
